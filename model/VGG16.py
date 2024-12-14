@@ -46,6 +46,20 @@ class VGG16(nn.Module):
             nn.Linear(in_features=4096, out_features=self.class_num)
         )
 
+        for m in self.conv_net.modules():
+            if isinstance(m, nn.Conv2d):
+                torch.nn.init.xavier_normal_(m.weight.data)
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.Linear):
+                torch.nn.init.normal_(m.weight.data, 0, 0.01)
+                m.bias.data.zero_()
+
+        for m in self.classifier.modules():
+            if isinstance(m, nn.Linear):
+                torch.nn.init.normal_(m.weight.data, 0, 0.01)
+                m.bias.data.zero_()
+
     def forward(self, x):
         # input shape N*C*H*W, H=W=224
         x = self.conv_net(x)

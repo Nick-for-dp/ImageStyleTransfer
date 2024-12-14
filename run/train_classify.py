@@ -18,7 +18,7 @@ def train(model, epochs, device, save_root_path, batch_size=8, learning_rate=2e-
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     # 学习率随着训练进行不断调整
-    scheduler = CyclicLR(optimizer, base_lr=1e-4, max_lr=learning_rate)
+    scheduler = CyclicLR(optimizer, base_lr=1e-4, max_lr=learning_rate, cycle_momentum=False)
 
     transform_for_train = transform.Compose([
         transform.RandomHorizontalFlip(p=0.5),
