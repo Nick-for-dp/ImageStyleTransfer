@@ -1,15 +1,15 @@
 import os
 import torch
-import random
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transform
 from model.VGG16 import VGG16
 from data.classifiy_dataset import CIFARDataset
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import CyclicLR
 
 
-def train(model, epochs, device, save_root_path, batch_size=8, learning_rate=1e-3):
+def train(model, epochs, device, save_root_path, batch_size=8, learning_rate=2e-3):
     if not os.path.exists(save_root_path):
         os.makedirs(save_root_path, exist_ok=True)
     train_dataset = CIFARDataset(root_path='../train_data/cifar_10', is_train=True)
@@ -17,6 +17,16 @@ def train(model, epochs, device, save_root_path, batch_size=8, learning_rate=1e-
     lr = learning_rate  # 学习率
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    # 学习率随着训练进行不断调整
+    scheduler = CyclicLR(optimizer, base_lr=1e-4, max_lr=learning_rate)
+
+    transform_for_train = transform.Compose([
+        transform.RandomHorizontalFlip(p=0.5),
+        transform.RandomVerticalFlip(p=0.5),
+        transform.ColorJitter(brightness=0.1, contrast=0.5, saturation=0.5, hue=0.5),
+    ])
+    # 方差与均值统计来自ImageNet
+    normalize_for_train = transform.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
 
     total_loss = 0.0
     pred_right_item = 0
@@ -25,12 +35,20 @@ def train(model, epochs, device, save_root_path, batch_size=8, learning_rate=1e-
         for idx, data in enumerate(train_dataloader):
             img_data = data['img_data'].permute(0, 3, 1, 2).to(device)  # N*H*W*C -> N*C*H*W
             label = data['label'].to(device)  # N*1
+
+            # 图像取值约束在[0, 1]之间
+            img_data = img_data / img_data.max()
+            # 按一定概率做数据增广（旋转和颜色变化）
+            img_data = transform_for_train(img_data)
+            img_data = normalize_for_train(img_data)
+
             net_out = model(img_data)
             loss = criterion(net_out, label)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step()
 
             total_loss += loss.item()
             total_item += len(label)
