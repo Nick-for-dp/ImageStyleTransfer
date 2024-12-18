@@ -42,7 +42,7 @@ def train(model, epochs, device, save_root_path, pre_train_model_path, batch_siz
         transform.ColorJitter(brightness=0.1, contrast=0.5, saturation=0.5, hue=0.5),
     ])
     # 方差与均值统计来自ImageNet
-    normalize_for_train = transform.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
+    normalize_for_train = transform.Normalize(mean=[0.4915, 0.4823, 0.4468], std=[0.2470, 0.2435, 0.2616])
 
     total_loss = 0.0
     pred_right_item = 0
@@ -88,5 +88,5 @@ if __name__ == '__main__':
     net = VGG16(class_num=10).to(calc_device)  # 声明模型
     save_path = '../save_ckpt'
     pre_train_model = '../pretrain_model/vgg16-397923af.pth'
-    train(net, epochs=10, device=calc_device,
-          save_root_path=save_path, pre_train_model_path=pre_train_model, learning_rate=1e-3)
+    train(net, epochs=10, device=calc_device, save_root_path=save_path,
+          pre_train_model_path=pre_train_model, learning_rate=1e-3, batch_size=16)
