@@ -34,7 +34,7 @@ def train(model, epochs, device, save_root_path, pre_train_model_path, batch_siz
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     # 学习率随着训练进行不断调整
-    scheduler = CyclicLR(optimizer, base_lr=2e-3, max_lr=learning_rate, cycle_momentum=False)
+    scheduler = CyclicLR(optimizer, base_lr=1e-4, max_lr=learning_rate, cycle_momentum=False)
 
     transform_for_train = transform.Compose([
         transform.RandomHorizontalFlip(p=0.5),
@@ -73,7 +73,7 @@ def train(model, epochs, device, save_root_path, pre_train_model_path, batch_siz
             if idx % 100 == 0:
                 print(f'Index {idx}, total loss: {total_loss / total_item: .4f}')
 
-        if (i + 1) % 2 == 0:
+        if (i + 1) % 1 == 0:
             accuracy = pred_right_item / total_item
             model_name = 'vgg16_epoch{}.pth'.format(i+1)
             save_file_path = os.path.join(save_root_path, model_name)
@@ -88,4 +88,5 @@ if __name__ == '__main__':
     net = VGG16(class_num=10).to(calc_device)  # 声明模型
     save_path = '../save_ckpt'
     pre_train_model = '../pretrain_model/vgg16-397923af.pth'
-    train(net, epochs=10, device=calc_device, save_root_path=save_path, pre_train_model_path=pre_train_model)
+    train(net, epochs=10, device=calc_device,
+          save_root_path=save_path, pre_train_model_path=pre_train_model, learning_rate=1e-3)
