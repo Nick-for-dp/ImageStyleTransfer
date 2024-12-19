@@ -88,5 +88,5 @@ if __name__ == '__main__':
     net = VGG16(class_num=10).to(calc_device)  # 声明模型
     save_path = '../save_ckpt'
     pre_train_model = '../pretrain_model/vgg16-397923af.pth'
-    train(net, epochs=10, device=calc_device, save_root_path=save_path,
-          pre_train_model_path=pre_train_model, learning_rate=1e-3, batch_size=16)
+    train(net, epochs=30, device=calc_device, save_root_path=save_path,
+          pre_train_model_path=pre_train_model, learning_rate=5e-4, batch_size=16)
